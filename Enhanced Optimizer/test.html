@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Optimizer Test Page</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .status-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .box { border: 1px solid #ccc; padding: 15px; border-radius: 5px; background: #f9f9f9; }
+    .pass { color: green; font-weight: bold; }
+    .fail { color: red; font-weight: bold; }
+    video { max-width: 100%; height: auto; border: 1px solid #333; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <h1>🔍 Optimizer Bypass Test Page</h1>
+  <p>If Optimizer is active, you should see the expected bypass behaviors below.</p>
+  
+  <div class="status-panel">
+    <!-- 1. Text Selection & Right Click -->
+    <div class="box">
+      <h3>1. Mouse & Text (Try right-clicking or selecting this text)</h3>
+      <p id="mouse-test" oncontextmenu="return false;" onselectstart="return false;" oncopy="return false;" style="user-select: none;">
+        [Try to copy me!] Right click and text selection should be forcibly BLOCKED by this site (but Optimizer should allow it).
+      </p>
+      <div id="mouse-result">Ctx Menu Blocked: <span class="fail">Yes</span></div>
+    </div>
+
+    <!-- 2. Keyboard Shortcuts -->
+    <div class="box">
+      <h3>2. Keyboard Shortcuts (Try Ctrl+C, Ctrl+V, F12)</h3>
+      <p>Click inside the box and press F12 or Ctrl+V. The site will try to intercept it.</p>
+      <input type="text" id="kb-input" placeholder="Type here...">
+      <div id="kb-result"></div>
+    </div>
+
+    <!-- 3. Visibility Page -->
+    <div class="box">
+      <h3>3. Visibility & Focus</h3>
+      <div>document.hidden: <span id="doc-hidden">Checking...</span></div>
+      <div>document.visibilityState: <span id="doc-vis">Checking...</span></div>
+      <div>document.hasFocus(): <span id="doc-focus">Checking...</span></div>
+      <div id="vis-events-log">Events received: 0</div>
+    </div>
+
+    <!-- 4. Mouse Tracking -->
+    <div class="box" id="mouse-tracker" style="background:#eee; padding:20px; text-align:center; cursor: crosshair;">
+      <h3>4. Mouse Tracking</h3>
+      <p>Move mouse deeply out of this box. The site tracks 'mouseleave'.</p>
+      <div id="mouse-track-result">Inside</div>
+    </div>
+
+    <!-- 5. Fullscreen / Window Size -->
+    <div class="box">
+      <h3>5. Window / Fullscreen Spoofing</h3>
+      <div>window.innerWidth: <span id="win-width">Checking...</span></div>
+      <div>window.innerHeight: <span id="win-height">Checking...</span></div>
+      <button id="fs-btn">Request Real Fullscreen</button>
+      <div id="fs-result"></div>
+    </div>
+
+    <!-- 6. Media Devices (Webcam / Mic / Screen Share) -->
+    <div class="box" style="grid-column: span 2;">
+      <h3>6. Media Streams (Webcam, Mic, Screen Share)</h3>
+      <button id="cam-btn">Request Webcam/Mic</button>
+      <button id="screen-btn">Request Screen Share</button>
+      <br>
+      <video id="media-video" autoplay playsinline controls></video>
+      <div id="media-info"></div>
+    </div>
+  </div>
+
+  <script>
+    // 1. Mouse Test - See if listeners fire
+    document.getElementById('mouse-test').addEventListener('contextmenu', (e) => {
+      document.getElementById('mouse-result').innerHTML = 'Ctx Menu Blocked: <span class="fail">Yes (Site caught it)</span>';
+      e.preventDefault();
+    });
+
+    // 2. Keyboard Shortcuts
+    document.getElementById('kb-input').addEventListener('keydown', (e) => {
+      if (e.ctrlKey || e.key === 'F12') {
+        document.getElementById('kb-result').innerHTML = `Site intercepted: <span class="fail">${e.key}</span>`;
+        e.preventDefault();
+      }
+    });
+
+    // 3. Visibility Loop
+    setInterval(() => {
+      document.getElementById('doc-hidden').innerHTML = document.hidden ? '<span class="fail">true</span> (Site knows you are away)' : '<span class="pass">false</span>';
+      document.getElementById('doc-vis').innerHTML = document.visibilityState === 'visible' ? '<span class="pass">visible</span>' : `<span class="fail">${document.visibilityState}</span>`;
+      document.getElementById('doc-focus').innerHTML = document.hasFocus() ? '<span class="pass">true</span>' : '<span class="fail">false</span>';
+    }, 500);
+
+    let visCounter = 0;
+    document.addEventListener('visibilitychange', () => {
+      visCounter++;
+      document.getElementById('vis-events-log').innerHTML = `Events received: <span class="fail">${visCounter}</span> (Site detected tab switch!)`;
+    });
+    window.addEventListener('blur', () => {
+      visCounter++;
+      document.getElementById('vis-events-log').innerHTML = `Events received: <span class="fail">${visCounter} (blur)</span>`;
+    });
+
+    // 4. Mouse Tracking
+    const tracker = document.getElementById('mouse-tracker');
+    tracker.addEventListener('mouseleave', () => {
+      document.getElementById('mouse-track-result').innerHTML = '<span class="fail">LEFT PAGE! (Site saw you leave)</span>';
+    });
+    tracker.addEventListener('mouseenter', () => {
+      document.getElementById('mouse-track-result').innerHTML = 'Inside';
+    });
+
+    // 5. Window Size
+    setInterval(() => {
+      document.getElementById('win-width').innerText = window.innerWidth;
+      document.getElementById('win-height').innerText = window.innerHeight;
+    }, 500);
+
+    document.getElementById('fs-btn').addEventListener('click', async () => {
+      try {
+        await document.documentElement.requestFullscreen();
+        document.getElementById('fs-result').innerHTML = '<span class="fail">Successfully entered real fullscreen!</span>';
+      } catch (e) {
+        document.getElementById('fs-result').innerHTML = `<span class="pass">Prevented: ${e.message}</span>`;
+      }
+    });
+
+    // 6. Media Devices
+    const videoPreview = document.getElementById('media-video');
+    const mediaInfo = document.getElementById('media-info');
+
+    document.getElementById('cam-btn').addEventListener('click', async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        videoPreview.srcObject = stream;
+        
+        // Analyze stream tracks
+        const tracks = stream.getTracks();
+        mediaInfo.innerHTML = `<strong>Received Stream:</strong><br>
+                               Tracks: ${tracks.length}<br>
+                               ${tracks.map(t => `- ${t.kind} (label: "${t.label}", mute: ${t.muted})`).join('<br>')}`;
+      } catch(e) {
+        mediaInfo.innerHTML = `<span class="fail">Error: ${e.message}</span>`;
+      }
+    });
+
+    document.getElementById('screen-btn').addEventListener('click', async () => {
+      try {
+        const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+        videoPreview.srcObject = stream;
+        
+        const videoTrack = stream.getVideoTracks()[0];
+        const settings = videoTrack.getSettings() || {};
+        
+        mediaInfo.innerHTML = `<strong>Received Screen Share:</strong><br>
+                               Label: ${videoTrack.label}<br>
+                               Display Surface: ${settings.displaySurface} <br>
+                               Resolution: ${settings.width}x${settings.height}`;
+                               
+        if (settings.displaySurface !== 'monitor') {
+           mediaInfo.innerHTML += '<br><span class="fail">Site detects you are sharing a window/tab, not the whole screen!</span>';
+        } else {
+           mediaInfo.innerHTML += '<br><span class="pass">Site thinks you are sharing the entire monitor!</span>';
+        }
+      } catch(e) {
+        mediaInfo.innerHTML = `<span class="fail">Error: ${e.message}</span>`;
+      }
+    });
+  </script>
+</body>
+</html>

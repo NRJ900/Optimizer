@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>⚡ Optimizer</h1>
+    </div>
+
+    <div class="status-section">
+      <div class="status-indicator" id="status">
+        <span class="status-dot"></span>
+        <span id="status-text">Loading...</span>
+      </div>
+    </div>
+
+    <div class="toggle-section main-toggle">
+      <label class="switch">
+        <input type="checkbox" id="toggle-enabled">
+        <span class="slider"></span>
+      </label>
+      <span class="toggle-label">Enable Optimizer</span>
+    </div>
+    
+    <div class="toggle-section">
+     <label class="switch">
+        <input type="checkbox" id="toggle-silent">
+        <span class="slider"></span>
+     </label>
+     <span class="toggle-label">🔇 Silent Mode</span>
+    </div>
+
+    <div class="features-section" id="features-section">
+      <h3>Features</h3>
+      
+      <div class="feature-item">
+        <label class="switch-small">
+          <input type="checkbox" class="feature-toggle" data-feature="textSelection">
+          <span class="slider-small"></span>
+        </label>
+        <div class="feature-info">
+          <span class="feature-label">Text Selection</span>
+          <span class="feature-desc">Allow text selection on page</span>
+        </div>
+      </div>
+
+      <div class="feature-item">
+        <label class="switch-small">
+          <input type="checkbox" class="feature-toggle" data-feature="rightClick">
+          <span class="slider-small"></span>
+        </label>
+        <div class="feature-info">
+          <span class="feature-label">Right Click</span>
+          <span class="feature-desc">Enable context menu</span>
+        </div>
+      </div>
+
+      <div class="feature-item">
+        <label class="switch-small">
+          <input type="checkbox" class="feature-toggle" data-feature="copyPaste">
+          <span class="slider-small"></span>
+        </label>
+        <div class="feature-info">
+          <span class="feature-label">Copy/Paste</span>
+          <span class="feature-desc">Allow copy, cut, and paste</span>
+        </div>
+      </div>
+
+      <div class="feature-item">
+        <label class="switch-small">
+          <input type="checkbox" class="feature-toggle" data-feature="keyboardShortcuts">
+          <span class="slider-small"></span>
+        </label>
+        <div class="feature-info">
+          <span class="feature-label">Keyboard Shortcuts</span>
+          <span class="feature-desc">Enable Ctrl+C, Ctrl+V, F12, etc.</span>
+        </div>
+      </div>
+
+      <div class="feature-item">
+        <label class="switch-small">
+          <input type="checkbox" class="feature-toggle" data-feature="visibilitySpoof">
+          <span class="slider-small"></span>
+        </label>
+        <div class="feature-info">
+          <span class="feature-label">Visibility Spoofing</span>
+          <span class="feature-desc">Always appear focused/visible</span>
+        </div>
+      </div>
+
+      <div class="feature-item">
+        <label class="switch-small">
+          <input type="checkbox" class="feature-toggle" data-feature="windowSizeSpoof">
+          <span class="slider-small"></span>
+        </label>
+        <div class="feature-info">
+          <span class="feature-label">Fullscreen Bypass</span>
+          <span class="feature-desc">Fake fullscreen window size</span>
+        </div>
+      </div>
+
+      <div class="feature-item">
+  	<label class="switch-small">
+    	  <input type="checkbox" class="feature-toggle" data-feature="mouseTracking">
+    	  <span class="slider-small"></span>
+  	</label>
+  	<div class="feature-info">
+    	  <span class="feature-label">Mouse Tracking Bypass</span>
+    	  <span class="feature-desc">Prevent detection when mouse leaves window</span>
+  	</div>
+      </div>
+
+      <div class="feature-item">
+        <label class="switch-small">
+          <input type="checkbox" class="feature-toggle" data-feature="tabDetection">
+          <span class="slider-small"></span>
+        </label>
+        <div class="feature-info">
+          <span class="feature-label">Tab Detection Bypass</span>
+          <span class="feature-desc">Neutralize tab-switch tracking</span>
+        </div>
+      </div>
+
+      <div class="feature-item">
+        <label class="switch-small">
+          <input type="checkbox" class="feature-toggle" data-feature="devToolsDetection">
+          <span class="slider-small"></span>
+        </label>
+        <div class="feature-info">
+          <span class="feature-label">DevTools Detection</span>
+          <span class="feature-desc">Hide DevTools from detection</span>
+        </div>
+      </div>
+
+      <div class="feature-item">
+        <label class="switch-small">
+          <input type="checkbox" class="feature-toggle" data-feature="webcamBypass">
+          <span class="slider-small"></span>
+        </label>
+        <div class="feature-info">
+          <span class="feature-label">Webcam Spoofing</span>
+          <span class="feature-desc">Fakes video stream if requested</span>
+          <div class="sub-setting" id="video-upload-section" style="margin-top: 8px; font-size: 0.9em; display: flex; flex-direction: column; gap: 5px;">
+             <input type="file" id="custom-video-upload" accept="video/mp4,video/webm" style="font-size: 0.8em;" />
+             <div style="display: flex; justify-content: space-between; align-items: center;">
+               <span id="video-status" style="color: #aaa; font-style: italic;">Using default animation</span>
+               <button id="clear-video-btn" style="padding: 2px 6px; font-size: 0.8em; background: #333; color: #fff; border: 1px solid #555; cursor: pointer; border-radius: 3px; display: none;">Clear</button>
+             </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="feature-item">
+        <label class="switch-small">
+          <input type="checkbox" class="feature-toggle" data-feature="micBypass">
+          <span class="slider-small"></span>
+        </label>
+        <div class="feature-info">
+          <span class="feature-label">Microphone Spoofing</span>
+          <span class="feature-desc">Fakes audio with silence if requested</span>
+        </div>
+      </div>
+
+      <div class="feature-item">
+        <label class="switch-small">
+          <input type="checkbox" class="feature-toggle" data-feature="screenShareBypass">
+          <span class="slider-small"></span>
+        </label>
+        <div class="feature-info">
+          <span class="feature-label">Screen Share Bypass</span>
+          <span class="feature-desc">Fakes 'Entire Screen' if Window/Tab shared</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-section">
+      <h3>Current Site:</h3>
+      <p id="current-url">Checking...</p>
+      
+      <div id="domain-filter-section">
+        <h3>Active Features:</h3>
+        <p id="feature-count">0 / 11</p>
+      </div>
+    </div>
+
+    <div class="footer">
+      <button id="reload-btn" class="btn">Apply & Reload</button>
+      <button id="reset-btn" class="btn-secondary">Reset All</button>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
